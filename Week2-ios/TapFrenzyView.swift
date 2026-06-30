@@ -9,6 +9,10 @@ struct TapFrenzyView: View {
     @State private var gameOver = false
     @State private var tapScale: CGFloat = 1.0
     
+ 
+    @State private var showNamePrompt = false
+    @State private var playerName = ""
+    
     @AppStorage("tapHighScore") var highScore = 0
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -60,7 +64,6 @@ struct TapFrenzyView: View {
             .background(RoundedRectangle(cornerRadius: 15).fill(Color(.systemGray6)))
             
             Spacer()
-            
             
             Button {
                 withAnimation(.spring(response: 0.15, dampingFraction: 0.4)) {
@@ -121,8 +124,28 @@ struct TapFrenzyView: View {
                 withAnimation(.bouncy) {
                     gameOver = true
                     if score > highScore { highScore = score }
+                    
+                  
+                    if LeaderboardManager.shared.isHighScore(score: score, game: "tap") {
+                        showNamePrompt = true
+                    }
                 }
             }
+        }
+       
+        .alert("New High Score!", isPresented: $showNamePrompt) {
+            TextField("Enter your name", text: $playerName)
+            
+            Button("Save") {
+                LeaderboardManager.shared.addEntry(name: playerName, score: score, game: "tap")
+                playerName = "" // Reset text field cache
+            }
+            
+            Button("Cancel", role: .cancel) {
+                playerName = ""
+            }
+        } message: {
+            Text("You scored \(score) points! Claim your spot in the Hall of Fame:")
         }
     }
     
