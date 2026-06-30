@@ -1,7 +1,7 @@
 import SwiftUI
 import Combine
 
-// MARK: - Models & Enums
+
 
 enum CardTheme: String, CaseIterable {
     case animals = "Animals"
@@ -23,7 +23,7 @@ enum CardTheme: String, CaseIterable {
     }
 }
 
-// MARK: - Main View
+
 struct LightItUpView: View {
     @State private var cards: [Card] = []
     @State private var score = 0
@@ -32,7 +32,7 @@ struct LightItUpView: View {
     @State private var gameOver = false
     @State private var currentTheme: CardTheme = .animals
     
-    // Properties for Leaderboard integration
+   
     @State private var showNamePrompt = false
     @State private var playerName = ""
     
@@ -43,7 +43,7 @@ struct LightItUpView: View {
     var body: some View {
         VStack(spacing: 15) {
             
-            // Header
+            
             VStack(spacing: 5) {
                 HStack(spacing: 8) {
                     Image(systemName: "lightbulb.fill")
@@ -53,7 +53,7 @@ struct LightItUpView: View {
                         .fontWeight(.black)
                 }
                 
-                // Theme Indicator
+               
                 Text("Category: \(currentTheme.rawValue)")
                     .font(.headline)
                     .foregroundColor(.blue)
@@ -67,7 +67,7 @@ struct LightItUpView: View {
                     .foregroundColor(.secondary)
             }
             
-            // Stats Board
+     
             HStack(spacing: 50) {
                 Text("Score: \(score)")
                     .font(.title2)
@@ -81,11 +81,11 @@ struct LightItUpView: View {
             }
             .padding(.vertical, 10)
             
-            // The Grid
+            
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columns), spacing: 12) {
                 ForEach(cards.indices, id: \.self) { index in
                     ZStack {
-                        // Card Background
+                        
                         RoundedRectangle(cornerRadius: 16)
                             .fill(cards[index].isLit ? Color.yellow : Color(.systemGray5))
                             .overlay(
@@ -94,7 +94,7 @@ struct LightItUpView: View {
                             )
                             .shadow(color: cards[index].isLit ? .init(.displayP3, red: 1, green: 0.8, blue: 0, opacity: 0.4) : .clear, radius: 8)
                         
-                        // Emoji Content
+                        
                         Text(cards[index].emoji)
                             .font(.system(size: 40))
                             .opacity(cards[index].isLit ? 1.0 : 0.3)
@@ -115,7 +115,7 @@ struct LightItUpView: View {
             
             Spacer()
             
-            // Game Over Button
+            
             if gameOver {
                 Button {
                     withAnimation(.spring()) { startGame() }
@@ -158,7 +158,7 @@ struct LightItUpView: View {
                 }
             }
         }
-        // Native overlay field to submit player score history
+      
         .alert("Round Completed!", isPresented: $showNamePrompt) {
             TextField("Enter your name", text: $playerName)
             
@@ -175,7 +175,7 @@ struct LightItUpView: View {
         }
     }
     
-    // MARK: - Game Logic
+
     
     func handleTap(at index: Int) {
         guard index < cards.count else { return }

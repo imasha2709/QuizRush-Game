@@ -1,13 +1,13 @@
 import SwiftUI
 
-// Declare this EXACTLY ONCE for the whole project
+
 struct Card: Identifiable {
     let id = UUID()
     var isLit: Bool = false
     var emoji: String = "❓"
 }
 
-// Declare this EXACTLY ONCE for the whole project
+
 struct ScaleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

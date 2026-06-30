@@ -14,7 +14,7 @@ struct LeaderboardView: View {
     
     var body: some View {
         VStack(spacing: 15) {
-            // Game Picker Header
+            
             Picker("Game Mode", selection: $selectedGame) {
                 Text("Tap Frenzy").tag("tap")
                 Text("Light It Up").tag("light")
@@ -32,19 +32,19 @@ struct LeaderboardView: View {
             } else {
                 ScrollView {
                     VStack(spacing: 20) {
-                        // MARK: - THE TOP 3 PODIUM CELEBRATION
+                        
                         HStack(alignment: .bottom, spacing: 15) {
-                            // 2nd Place
+                         
                             if currentEntries.count > 1 {
                                 podiumCard(entry: currentEntries[1], rank: 2, trophy: "🥈", height: 130, color: .gray)
                             }
                             
-                            // 1st Place (Center / Tallest)
+                          
                             if currentEntries.count > 0 {
                                 podiumCard(entry: currentEntries[0], rank: 1, trophy: "🥇", height: 160, color: .yellow)
                             }
                             
-                            // 3rd Place
+                           
                             if currentEntries.count > 2 {
                                 podiumCard(entry: currentEntries[2], rank: 3, trophy: "🥉", height: 110, color: .orange)
                             }
@@ -55,9 +55,9 @@ struct LeaderboardView: View {
                         Divider()
                             .padding(.horizontal)
                         
-                        // MARK: - ALL REMAINING SCORES LIST
+                        
                         VStack(spacing: 10) {
-                            // Grabs everything else from rank 4 onwards
+                            
                             ForEach(Array(currentEntries.enumerated()), id: \.element.id) { index, entry in
                                 if index >= 3 {
                                     HStack(spacing: 15) {
@@ -95,7 +95,7 @@ struct LeaderboardView: View {
         .onAppear { manager.loadAllScores() }
     }
     
-    // Custom View builder helper component for the top 3 podium layout slots
+
     @ViewBuilder
     func podiumCard(entry: LeaderboardEntry, rank: Int, trophy: String, height: CGFloat, color: Color) -> some View {
         VStack(spacing: 8) {
@@ -117,7 +117,7 @@ struct LeaderboardView: View {
             
             Spacer()
             
-            // The literal podium block base
+            
             Text("RANK \(rank)")
                 .font(.caption)
                 .fontWeight(.black)

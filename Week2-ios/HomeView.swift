@@ -7,7 +7,7 @@ struct HomeView: View {
         NavigationStack {
             VStack(spacing: 30) {
                 
-                // MARK: - Title Header
+               
                 HStack(spacing: 12) {
                     Image(systemName: "gamecontroller.fill")
                         .font(.largeTitle)
@@ -20,8 +20,6 @@ struct HomeView: View {
                 .offset(y: animateIn ? 0 : -20)
                 .opacity(animateIn ? 1 : 0)
                 
-                // MARK: - Tap Frenzy Button
-                // Fixed: Destination updated from a Text placeholder to TapFrenzyView()
                 NavigationLink(destination: TapFrenzyView()) {
                     HStack(spacing: 15) {
                         Image(systemName: "hand.tap.fill")
@@ -43,7 +41,7 @@ struct HomeView: View {
                 .offset(y: animateIn ? 0 : 30)
                 .opacity(animateIn ? 1 : 0)
                 
-                // MARK: - Light It Up Button
+            
                 NavigationLink(destination: LightItUpView()) {
                     HStack(spacing: 15) {
                         Image(systemName: "lightbulb.fill")
@@ -65,8 +63,7 @@ struct HomeView: View {
                 .offset(y: animateIn ? 0 : 30)
                 .opacity(animateIn ? 1 : 0)
                 
-                // MARK: - Quiz Rush Button
-                // Fixed: Destination updated from a Text placeholder to QuizRushView()
+               
                 NavigationLink(destination: QuizRushView()) {
                     HStack(spacing: 15) {
                         Image(systemName: "timer")
@@ -88,7 +85,7 @@ struct HomeView: View {
                 .offset(y: animateIn ? 0 : 30)
                 .opacity(animateIn ? 1 : 0)
                 
-                // Place this inside the VStack in your HomeView
+                
                 NavigationLink(destination: LeaderboardView()) {
                     HStack(spacing: 15) {
                         Image(systemName: "trophy.fill")

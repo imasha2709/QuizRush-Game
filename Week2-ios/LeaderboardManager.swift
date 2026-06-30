@@ -19,7 +19,7 @@ class LeaderboardManager: ObservableObject {
         loadAllScores()
     }
     
-    // Any score greater than 0 is now a valid leaderboard entry!
+    
     func isHighScore(score: Int, game: String) -> Bool {
         return score > 0
     }
@@ -30,7 +30,7 @@ class LeaderboardManager: ObservableObject {
         var currentScores = getScores(for: game)
         
         currentScores.append(newEntry)
-        currentScores.sort { $0.score > $1.score } // Highest scores still sit at the top
+        currentScores.sort { $0.score > $1.score }
         
         saveScores(currentScores, game: game)
     }

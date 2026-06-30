@@ -2,13 +2,16 @@ import SwiftUI
 
 struct QuizRushView: View {
 
-    @StateObject var vm = QuizViewModel()
+    @StateObject private var vm = QuizViewModel()
     
-    // Properties for Leaderboard integration
     @State private var showNamePrompt = false
-    @State private var playerName = ""
+    @State private var playerNameInput = ""
+    @AppStorage("playerName") var savedPlayerName = ""
 
-    // Dynamic progress calculation (Returns a value between 0.0 and 1.0)
+
+    @State private var selectedAnswer: String? = nil
+    @State private var isShowingFeedback = false
+
     private var progressFraction: Double {
         guard !vm.questions.isEmpty else { return 0.0 }
         return Double(vm.currentQuestion) / Double(vm.questions.count)
@@ -19,7 +22,8 @@ struct QuizRushView: View {
             VStack {
                 if vm.isLoading {
                     Spacer()
-                    ProgressView("Loading Questions...")
+                    ProgressView("Loading Rush Questions...")
+                        .tint(.purple)
                     Spacer()
                 }
                 else if vm.hasError {
@@ -27,125 +31,175 @@ struct QuizRushView: View {
                     Image(systemName: "wifi.slash")
                         .font(.system(size: 60))
                         .foregroundColor(.red)
-                    
                     Text("Something went wrong")
-                    
-                    Button("Try Again") {
-                        vm.loadQuestions()
-                    }
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    
+                        .padding(.vertical, 8)
+                    Button("Try Again") { vm.loadQuestions() }
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                     Spacer()
                 }
                 else if vm.finished {
                     Spacer()
-                    Image(systemName: "star.fill")
+                    Image(systemName: "trophy.fill")
                         .font(.system(size: 70))
                         .foregroundColor(.yellow)
                     
                     Text("Game Finished")
                         .font(.largeTitle)
+                        .bold()
                     
-                    Text("Score: \(vm.score) / \(vm.questions.count)")
+                    Text("Final Score: \(vm.score)")
                         .font(.title2)
+                        .foregroundColor(.purple)
+                        .padding(.bottom, 20)
                     
-                    Button("Play Again") {
-                        vm.restart()
-                    }
-                    .padding()
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    
+                    Button("Play Again") { vm.restart() }
+                        .padding()
+                        .frame(maxWidth: 200)
+                        .background(Color.green)
+                        .foregroundColor(.white)
+                        .fontWeight(.bold)
+                        .cornerRadius(12)
                     Spacer()
                 }
                 else if !vm.questions.isEmpty {
                     VStack(spacing: 20) {
                         
-                        // MARK: - Animated Progress Bar
+                
                         VStack(spacing: 8) {
                             HStack {
-                                Text("Question \(vm.currentQuestion + 1) / \(vm.questions.count)")
+                                Text("Question \(vm.currentQuestion + 1)/\(vm.questions.count)")
                                     .font(.headline)
                                 Spacer()
-                                Text("\(Int(progressFraction * 100))%")
-                                    .font(.subheadline)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.purple)
+                                if vm.streak > 1 {
+                                    Text("🔥 \(vm.streak)X STREAK")
+                                        .font(.caption)
+                                        .fontWeight(.black)
+                                        .foregroundColor(.orange)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Color.orange.opacity(0.2))
+                                        .cornerRadius(8)
+                                }
                             }
+                            
                             
                             ProgressView(value: progressFraction, total: 1.0)
                                 .tint(.purple)
-                                .scaleEffect(x: 1, y: 2, anchor: .center) // Increases bar thickness
+                                .scaleEffect(x: 1, y: 1.5, anchor: .center)
                                 .cornerRadius(4)
-                                .animation(.easeInOut, value: vm.currentQuestion) // Animates changes
+                            
+                          
+                            HStack {
+                                Image(systemName: "stopwatch.fill")
+                                    .foregroundColor(vm.timeRemaining < 3 ? .red : .blue)
+                                ProgressView(value: max(vm.timeRemaining, 0), total: 10.0)
+                                    .tint(vm.timeRemaining < 3 ? .red : .blue)
+                                Text(String(format: "%.1fs", max(vm.timeRemaining, 0)))
+                                    .font(.caption).monospacedDigit()
+                            }
+                            .padding(.top, 4)
                         }
                         .padding(.horizontal, 4)
 
+                      
                         Text(vm.questions[vm.currentQuestion].question)
                             .font(.title3)
+                            .fontWeight(.semibold)
                             .multilineTextAlignment(.center)
                             .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color(.secondarySystemBackground))
+                            .cornerRadius(16)
 
-                        ForEach(vm.questions[vm.currentQuestion].answers, id: \.self) { answer in
-                            Button {
-                                withAnimation(.spring()) {
-                                    vm.checkAnswer(answer)
+                        
+                        VStack(spacing: 12) {
+                            ForEach(vm.questions[vm.currentQuestion].answers, id: \.self) { answer in
+                                Button {
+                                    handleAnswerTap(answer)
+                                } label: {
+                                    Text(answer)
+                                        .font(.body)
+                                        .fontWeight(.medium)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(getButtonColor(for: answer))
+                                        .foregroundColor(.white)
+                                        .cornerRadius(12)
+                                        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
                                 }
-                            } label: {
-                                Text(answer)
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(12)
-                                    .shadow(radius: 4)
+                                .disabled(isShowingFeedback)
                             }
                         }
 
                         Spacer()
 
-                        Text("Score : \(vm.score)")
+                        // Live Dynamic Score Display Footer
+                        Text("Score: \(vm.score)")
                             .font(.title2)
+                            .fontWeight(.bold)
                     }
                     .padding()
-                } else {
-                    Spacer()
-                    Text("No questions available.")
-                    Spacer()
                 }
             }
             .navigationTitle("Quiz Rush")
-            .task {
-                vm.loadQuestions()
-            }
-            // Monitors when the state shifts to finished to evaluate Leaderboard status
+            .task { vm.loadQuestions() }
             .onChange(of: vm.finished) { _, isFinished in
                 if isFinished {
                     if LeaderboardManager.shared.isHighScore(score: vm.score, game: "quiz") {
+                        playerNameInput = savedPlayerName.isEmpty ? "Player" : savedPlayerName
                         showNamePrompt = true
                     }
                 }
             }
-            // Alert overlay interface to save player names
             .alert("New High Score!", isPresented: $showNamePrompt) {
-                TextField("Enter your name", text: $playerName)
-                
+                TextField("Enter your name", text: $playerNameInput)
                 Button("Save") {
-                    LeaderboardManager.shared.addEntry(name: playerName, score: vm.score, game: "quiz")
-                    playerName = "" // Clear state cache
+                    let structuredName = playerNameInput.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let finalName = structuredName.isEmpty ? "Anonymous" : structuredName
+                    savedPlayerName = finalName
+                    LeaderboardManager.shared.addEntry(name: finalName, score: vm.score, game: "quiz")
                 }
-                
-                Button("Cancel", role: .cancel) {
-                    playerName = ""
-                }
+                Button("Cancel", role: .cancel) {}
             } message: {
-                Text("You scored \(vm.score) points! Write your name into glory history:")
+                Text("You generated a booming \(vm.score) score! Store your status on the board:")
             }
         }
+    }
+
+    
+    private func handleAnswerTap(_ answer: String) {
+        selectedAnswer = answer
+        isShowingFeedback = true
+        
+        let isCorrect = vm.processAnswerSelection(answer)
+        
+       
+        let haptic = UINotificationFeedbackGenerator()
+        haptic.notificationOccurred(isCorrect ? .success : .error)
+        
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+            withAnimation(.easeInOut) {
+                vm.advanceToNextQuestion()
+                self.selectedAnswer = nil
+                self.isShowingFeedback = false
+            }
+        }
+    }
+
+    private func getButtonColor(for answer: String) -> Color {
+        guard isShowingFeedback else { return Color.blue }
+        
+        let correctTarget = vm.questions[vm.currentQuestion].correct_answer
+        if answer == correctTarget {
+            return Color.green
+        } else if answer == selectedAnswer {
+            return Color.red
+        }
+        return Color.blue.opacity(0.3)
     }
 }
 
