@@ -24,7 +24,7 @@ enum CardTheme: String, CaseIterable {
 struct LightItUpView: View {
     @State private var cards: [Card] = []
     @State private var score = 0
-    @State private var timeLeft = 30 // ⚡️ CHANGED: Faster game speed (30s)
+    @State private var timeLeft = 30
     @State private var columns = 3
     @State private var gameOver = false
     @State private var currentTheme: CardTheme = .animals
@@ -32,7 +32,7 @@ struct LightItUpView: View {
     @State private var showNamePrompt = false
     @State private var playerName = ""
     
-    @AppStorage("playerName") var savedPlayerName = "" // 👤 ADDED: Track global active user profile
+    @AppStorage("playerName") var savedPlayerName = ""
     @AppStorage("lightHighScore") var highScore = 0
     
     let gameTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -41,7 +41,7 @@ struct LightItUpView: View {
         VStack(spacing: 15) {
             
             VStack(spacing: 5) {
-                // 👤 ADDED: Active profile verification signature banner
+             
                 if !savedPlayerName.isEmpty {
                     HStack(spacing: 6) {
                         Image(systemName: "person.crop.circle.fill")
@@ -83,7 +83,7 @@ struct LightItUpView: View {
                 Text("Time: \(timeLeft)s")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(timeLeft <= 5 ? .red : .primary) // Red warning for last 5 seconds
+                    .foregroundColor(timeLeft <= 5 ? .red : .primary) 
             }
             .padding(.vertical, 10)
             
@@ -171,7 +171,7 @@ struct LightItUpView: View {
                 let structuredName = playerName.trimmingCharacters(in: .whitespacesAndNewlines)
                 let finalName = structuredName.isEmpty ? "Anonymous" : structuredName
                 
-                savedPlayerName = finalName // Remembers username globally
+                savedPlayerName = finalName
                 LeaderboardManager.shared.addEntry(name: finalName, score: score, game: "light")
                 playerName = ""
             }
@@ -197,7 +197,7 @@ struct LightItUpView: View {
     
     func startGame() {
         score = 0
-        timeLeft = 30 // ⚡️ CHANGED: Reset matches at the fast timing constraint
+        timeLeft = 30
         gameOver = false
         columns = 3
         currentTheme = .animals
@@ -216,7 +216,7 @@ struct LightItUpView: View {
         let targetColumns: Int
         let targetTheme: CardTheme
         
-        // ⚡️ CHANGED: Compressed time windows to match the faster 30s pacing
+     
         if timeLeft > 22 {
             targetColumns = 3; targetCount = 3; targetTheme = .animals
         } else if timeLeft > 15 {
