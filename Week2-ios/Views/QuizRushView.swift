@@ -8,7 +8,6 @@ struct QuizRushView: View {
     @State private var playerNameInput = ""
     @AppStorage("playerName") var savedPlayerName = ""
 
-
     @State private var selectedAnswer: String? = nil
     @State private var isShowingFeedback = false
 
@@ -67,6 +66,20 @@ struct QuizRushView: View {
                 else if !vm.questions.isEmpty {
                     VStack(spacing: 20) {
                         
+                        // 👤 ADDED: Dynamic profile welcome ribbon
+                        if !savedPlayerName.isEmpty {
+                            HStack(spacing: 6) {
+                                Image(systemName: "person.crop.circle.fill")
+                                    .foregroundColor(.purple)
+                                Text(savedPlayerName)
+                                    .fontWeight(.medium)
+                            }
+                            .font(.subheadline)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 12)
+                            .background(Color.purple.opacity(0.1))
+                            .cornerRadius(20)
+                        }
                 
                         VStack(spacing: 8) {
                             HStack {
@@ -85,13 +98,11 @@ struct QuizRushView: View {
                                 }
                             }
                             
-                            
                             ProgressView(value: progressFraction, total: 1.0)
                                 .tint(.purple)
                                 .scaleEffect(x: 1, y: 1.5, anchor: .center)
                                 .cornerRadius(4)
                             
-                          
                             HStack {
                                 Image(systemName: "stopwatch.fill")
                                     .foregroundColor(vm.timeRemaining < 3 ? .red : .blue)
@@ -104,7 +115,6 @@ struct QuizRushView: View {
                         }
                         .padding(.horizontal, 4)
 
-                      
                         Text(vm.questions[vm.currentQuestion].question)
                             .font(.title3)
                             .fontWeight(.semibold)
@@ -114,7 +124,6 @@ struct QuizRushView: View {
                             .background(Color(.secondarySystemBackground))
                             .cornerRadius(16)
 
-                        
                         VStack(spacing: 12) {
                             ForEach(vm.questions[vm.currentQuestion].answers, id: \.self) { answer in
                                 Button {
@@ -148,6 +157,14 @@ struct QuizRushView: View {
             .task { vm.loadQuestions() }
             .onChange(of: vm.finished) { _, isFinished in
                 if isFinished {
+                    // ==========================================
+                    // 🌟 REPAIR: Cleaned up broken 'currentCoordinates' call
+                    // ==========================================
+                    GameSessionManager.shared.saveGame(
+                        game: .quizRush,
+                        score: vm.score
+                    )
+                    
                     if LeaderboardManager.shared.isHighScore(score: vm.score, game: "quiz") {
                         playerNameInput = savedPlayerName.isEmpty ? "Player" : savedPlayerName
                         showNamePrompt = true
@@ -159,7 +176,7 @@ struct QuizRushView: View {
                 Button("Save") {
                     let structuredName = playerNameInput.trimmingCharacters(in: .whitespacesAndNewlines)
                     let finalName = structuredName.isEmpty ? "Anonymous" : structuredName
-                    savedPlayerName = finalName
+                    savedPlayerName = finalName // Sync profile user defaults
                     LeaderboardManager.shared.addEntry(name: finalName, score: vm.score, game: "quiz")
                 }
                 Button("Cancel", role: .cancel) {}
@@ -169,17 +186,14 @@ struct QuizRushView: View {
         }
     }
 
-    
     private func handleAnswerTap(_ answer: String) {
         selectedAnswer = answer
         isShowingFeedback = true
         
         let isCorrect = vm.processAnswerSelection(answer)
         
-       
         let haptic = UINotificationFeedbackGenerator()
         haptic.notificationOccurred(isCorrect ? .success : .error)
-        
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
             withAnimation(.easeInOut) {
@@ -191,6 +205,10 @@ struct QuizRushView: View {
     }
 
     private func getButtonColor(for answer: String) -> Color {
+        getButtonColorExplicitly(for: answer)
+    }
+    
+    private func getButtonColorExplicitly(for answer: String) -> Color {
         guard isShowingFeedback else { return Color.blue }
         
         let correctTarget = vm.questions[vm.currentQuestion].correct_answer
@@ -201,8 +219,4 @@ struct QuizRushView: View {
         }
         return Color.blue.opacity(0.3)
     }
-}
-
-#Preview {
-    QuizRushView()
 }
