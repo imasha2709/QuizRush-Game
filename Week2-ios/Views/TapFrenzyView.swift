@@ -1,13 +1,11 @@
 import SwiftUI
 import Combine
 
-
 struct TapEffect: Identifiable {
     let id = UUID()
     let text: String
     let color: Color
 }
-
 
 struct FloatingEffectView: View {
     let effect: TapEffect
@@ -30,7 +28,6 @@ struct FloatingEffectView: View {
     }
 }
 
-
 struct TapFrenzyView: View {
     @State private var score = 0
     @State private var timeLeft = 10
@@ -39,15 +36,12 @@ struct TapFrenzyView: View {
     @State private var gameOver = false
     @State private var tapScale: CGFloat = 1.0
     
-    
     @State private var isBonusActive = false
     @State private var effects: [TapEffect] = []
     @State private var flashColor: Color = .clear
     
-   
     @State private var showNamePrompt = false
     @State private var playerNameInput = ""
-    
     
     @AppStorage("playerName") var savedPlayerName = ""
     @AppStorage("tapHighScore") var highScore = 0
@@ -56,16 +50,13 @@ struct TapFrenzyView: View {
     
     var body: some View {
         ZStack {
-           
             flashColor
                 .ignoresSafeArea()
                 .opacity(0.15)
                 .animation(.easeOut(duration: 0.2), value: flashColor)
             
             VStack(spacing: 25) {
-                
                 VStack(spacing: 5) {
-                    
                     if !savedPlayerName.isEmpty {
                         HStack(spacing: 6) {
                             Image(systemName: "person.crop.circle.fill")
@@ -98,7 +89,6 @@ struct TapFrenzyView: View {
                     .foregroundColor(.secondary)
                 }
                 
-              
                 HStack(spacing: 40) {
                     VStack {
                         Text("Score")
@@ -127,7 +117,6 @@ struct TapFrenzyView: View {
                 
                 Spacer()
                 
-  
                 ZStack {
                     ForEach(effects) { effect in
                         FloatingEffectView(effect: effect)
@@ -137,7 +126,7 @@ struct TapFrenzyView: View {
                         handleTap()
                     } label: {
                         Text(isBonusActive ? "💥 BONUS" : "TAP")
-                            .font(.system(size: isBonusActive ? 26 : 32, weight: .black, design: .rounded))
+                            .font(.system(size: isBonusActive ? 16 : 32, weight: .black, design: .rounded)) // Reduced size slightly for layout
                             .foregroundColor(.white)
                             .frame(width: max(buttonSize, 60), height: max(buttonSize, 60))
                             .background(buttonColor)
@@ -186,7 +175,8 @@ struct TapFrenzyView: View {
                     isBonusActive = false
                     if score > highScore { highScore = score }
                     
-                    // Triggers the prompt right when the game finishes
+                    GameSessionManager.shared.saveGame(game: .tapFrenzy, score: score)
+                    
                     if LeaderboardManager.shared.isHighScore(score: score, game: "tap") {
                         playerNameInput = savedPlayerName.isEmpty ? "Player" : savedPlayerName
                         showNamePrompt = true
@@ -194,7 +184,6 @@ struct TapFrenzyView: View {
                 }
             }
         }
-    
         .alert("Submit to Leaderboard", isPresented: $showNamePrompt) {
             TextField("Your Name", text: $playerNameInput)
             
@@ -251,7 +240,8 @@ struct TapFrenzyView: View {
                 if Double.random(in: 0...1) < 0.25 {
                     isBonusActive = true
                     buttonColor = Color(red: 1, green: 0.84, blue: 0)
-                    buttonSize += 30
+                    // 🌟 CHANGED: Shrinks the size down to a small target (130) instead of growing it
+                    buttonSize = 130
                 } else {
                     changeButton()
                 }
@@ -280,8 +270,4 @@ struct TapFrenzyView: View {
         isBonusActive = false
         effects.removeAll()
     }
-}
-
-#Preview {
-    TapFrenzyView()
 }
