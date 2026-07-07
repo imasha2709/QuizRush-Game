@@ -1,8 +1,6 @@
 import SwiftUI
 import Combine
 
-
-
 enum CardTheme: String, CaseIterable {
     case animals = "Animals"
     case foods = "Foods"
@@ -23,19 +21,18 @@ enum CardTheme: String, CaseIterable {
     }
 }
 
-
 struct LightItUpView: View {
     @State private var cards: [Card] = []
     @State private var score = 0
-    @State private var timeLeft = 60
+    @State private var timeLeft = 30 // ⚡️ CHANGED: Faster game speed (30s)
     @State private var columns = 3
     @State private var gameOver = false
     @State private var currentTheme: CardTheme = .animals
     
-   
     @State private var showNamePrompt = false
     @State private var playerName = ""
     
+    @AppStorage("playerName") var savedPlayerName = "" // 👤 ADDED: Track global active user profile
     @AppStorage("lightHighScore") var highScore = 0
     
     let gameTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -43,8 +40,19 @@ struct LightItUpView: View {
     var body: some View {
         VStack(spacing: 15) {
             
-            
             VStack(spacing: 5) {
+                // 👤 ADDED: Active profile verification signature banner
+                if !savedPlayerName.isEmpty {
+                    HStack(spacing: 6) {
+                        Image(systemName: "person.crop.circle.fill")
+                            .foregroundColor(.blue)
+                        Text(savedPlayerName)
+                            .fontWeight(.medium)
+                    }
+                    .font(.subheadline)
+                    .padding(.bottom, 5)
+                }
+                
                 HStack(spacing: 8) {
                     Image(systemName: "lightbulb.fill")
                         .foregroundColor(.orange)
@@ -53,7 +61,6 @@ struct LightItUpView: View {
                         .fontWeight(.black)
                 }
                 
-               
                 Text("Category: \(currentTheme.rawValue)")
                     .font(.headline)
                     .foregroundColor(.blue)
@@ -67,7 +74,6 @@ struct LightItUpView: View {
                     .foregroundColor(.secondary)
             }
             
-     
             HStack(spacing: 50) {
                 Text("Score: \(score)")
                     .font(.title2)
@@ -77,15 +83,13 @@ struct LightItUpView: View {
                 Text("Time: \(timeLeft)s")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(timeLeft <= 10 ? .red : .primary)
+                    .foregroundColor(timeLeft <= 5 ? .red : .primary) // Red warning for last 5 seconds
             }
             .padding(.vertical, 10)
-            
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columns), spacing: 12) {
                 ForEach(cards.indices, id: \.self) { index in
                     ZStack {
-                        
                         RoundedRectangle(cornerRadius: 16)
                             .fill(cards[index].isLit ? Color.yellow : Color(.systemGray5))
                             .overlay(
@@ -93,7 +97,6 @@ struct LightItUpView: View {
                                     .stroke(cards[index].isLit ? Color.orange : Color.clear, lineWidth: 2)
                             )
                             .shadow(color: cards[index].isLit ? .init(.displayP3, red: 1, green: 0.8, blue: 0, opacity: 0.4) : .clear, radius: 8)
-                        
                         
                         Text(cards[index].emoji)
                             .font(.system(size: 40))
@@ -115,7 +118,6 @@ struct LightItUpView: View {
             
             Spacer()
             
-            
             if gameOver {
                 Button {
                     withAnimation(.spring()) { startGame() }
@@ -131,7 +133,6 @@ struct LightItUpView: View {
                     .background(Color.blue)
                     .cornerRadius(12)
                 }
-                .buttonStyle(ScaleButtonStyle())
                 .transition(.scale.combined(with: .opacity))
             }
         }
@@ -151,19 +152,27 @@ struct LightItUpView: View {
                     gameOver = true
                     if score > highScore { highScore = score }
                     
-                    // Automatically show prompt when the timer expires
+                    GameSessionManager.shared.saveGame(
+                        game: .lightItUp,
+                        score: score
+                    )
+                    
                     if score > 0 {
+                        playerName = savedPlayerName.isEmpty ? "Player" : savedPlayerName
                         showNamePrompt = true
                     }
                 }
             }
         }
-      
         .alert("Round Completed!", isPresented: $showNamePrompt) {
             TextField("Enter your name", text: $playerName)
             
             Button("Save") {
-                LeaderboardManager.shared.addEntry(name: playerName, score: score, game: "light")
+                let structuredName = playerName.trimmingCharacters(in: .whitespacesAndNewlines)
+                let finalName = structuredName.isEmpty ? "Anonymous" : structuredName
+                
+                savedPlayerName = finalName // Remembers username globally
+                LeaderboardManager.shared.addEntry(name: finalName, score: score, game: "light")
                 playerName = ""
             }
             
@@ -174,8 +183,6 @@ struct LightItUpView: View {
             Text("You secured \(score) points! Add your name to our infinite log:")
         }
     }
-    
-
     
     func handleTap(at index: Int) {
         guard index < cards.count else { return }
@@ -190,7 +197,7 @@ struct LightItUpView: View {
     
     func startGame() {
         score = 0
-        timeLeft = 60
+        timeLeft = 30 // ⚡️ CHANGED: Reset matches at the fast timing constraint
         gameOver = false
         columns = 3
         currentTheme = .animals
@@ -209,11 +216,12 @@ struct LightItUpView: View {
         let targetColumns: Int
         let targetTheme: CardTheme
         
-        if timeLeft > 45 {
+        // ⚡️ CHANGED: Compressed time windows to match the faster 30s pacing
+        if timeLeft > 22 {
             targetColumns = 3; targetCount = 3; targetTheme = .animals
-        } else if timeLeft > 30 {
-            targetColumns = 4; targetCount = 4; targetTheme = .foods
         } else if timeLeft > 15 {
+            targetColumns = 4; targetCount = 4; targetTheme = .foods
+        } else if timeLeft > 7 {
             targetColumns = 3; targetCount = 6; targetTheme = .emotions
         } else {
             targetColumns = 3; targetCount = 9; targetTheme = .mixed
@@ -235,8 +243,4 @@ struct LightItUpView: View {
         }
         lightRandomCard()
     }
-}
-
-#Preview {
-    LightItUpView()
 }
