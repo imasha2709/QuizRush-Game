@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		DF8473692FFD012900D289B3 /* Week2-ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "Week2-ios.xcodeproj"; path = "Week2-ios/Week2-ios.xcodeproj"; sourceTree = SOURCE_ROOT; };
+		DF84738D2FFD0DAE00D289B3 /* Week2-ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "Week2-ios.xcodeproj"; sourceTree = "<group>"; };
 		DFE021AC2FE11F2D00BFF43B /* Week2-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Week2-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -44,6 +45,13 @@
 
 /* Begin PBXGroup section */
 		DF84736C2FFD012900D289B3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DF84738E2FFD0DAE00D289B3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -122,6 +130,10 @@
 				{
 					ProductGroup = DF84736C2FFD012900D289B3 /* Products */;
 					ProjectRef = DF8473692FFD012900D289B3 /* Week2-ios.xcodeproj */;
+				},
+				{
+					ProductGroup = DF84738E2FFD0DAE00D289B3 /* Products */;
+					ProjectRef = DF84738D2FFD0DAE00D289B3 /* Week2-ios.xcodeproj */;
 				},
 			);
 			projectRoot = "";

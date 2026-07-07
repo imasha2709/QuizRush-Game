@@ -158,13 +158,13 @@ struct SettingsView: View {
             HStack {
                 Text("Application")
                 Spacer()
-                Text("Week 4 Game Hub").foregroundStyle(.secondary)
+                Text("Mini Game Hub").foregroundStyle(.secondary)
             }
 
             HStack {
                 Text("Developer")
                 Spacer()
-                Text("Your Name").foregroundStyle(.secondary)
+                Text("Imasha Chandramali").foregroundStyle(.secondary)
             }
 
             HStack {

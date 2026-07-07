@@ -37,7 +37,7 @@ class GameSessionManager: ObservableObject {
         )
 
         DispatchQueue.main.async {
-            // Inserts the new game session at the top of the history list
+         
             self.sessions.insert(session, at: 0)
             self.save()
         }
