@@ -66,7 +66,7 @@ struct QuizRushView: View {
                 else if !vm.questions.isEmpty {
                     VStack(spacing: 20) {
                         
-                        // 👤 ADDED: Dynamic profile welcome ribbon
+                       
                         if !savedPlayerName.isEmpty {
                             HStack(spacing: 6) {
                                 Image(systemName: "person.crop.circle.fill")
@@ -145,7 +145,7 @@ struct QuizRushView: View {
 
                         Spacer()
 
-                        // Live Dynamic Score Display Footer
+                        
                         Text("Score: \(vm.score)")
                             .font(.title2)
                             .fontWeight(.bold)
@@ -157,9 +157,7 @@ struct QuizRushView: View {
             .task { vm.loadQuestions() }
             .onChange(of: vm.finished) { _, isFinished in
                 if isFinished {
-                    // ==========================================
-                    // 🌟 REPAIR: Cleaned up broken 'currentCoordinates' call
-                    // ==========================================
+                    
                     GameSessionManager.shared.saveGame(
                         game: .quizRush,
                         score: vm.score
@@ -176,7 +174,7 @@ struct QuizRushView: View {
                 Button("Save") {
                     let structuredName = playerNameInput.trimmingCharacters(in: .whitespacesAndNewlines)
                     let finalName = structuredName.isEmpty ? "Anonymous" : structuredName
-                    savedPlayerName = finalName // Sync profile user defaults
+                    savedPlayerName = finalName
                     LeaderboardManager.shared.addEntry(name: finalName, score: vm.score, game: "quiz")
                 }
                 Button("Cancel", role: .cancel) {}
