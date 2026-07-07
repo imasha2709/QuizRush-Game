@@ -17,19 +17,18 @@ class GameSessionManager: ObservableObject {
         score: Int,
         location: CLLocationCoordinate2D? = LocationService.shared.currentLocation
     ) {
-        // 1. Extract the raw location coordinates if they exist
+   
         var finalLatitude = location?.latitude
         var finalLongitude = location?.longitude
         
-        // 2. Inject a small geometric jitter to prevent pin stacking
-        // 0.0003 degrees spreads pins out by roughly 25-35 meters
+       
         if let lat = finalLatitude, let lon = finalLongitude {
             let jitterRange = 0.0003
             finalLatitude = lat + Double.random(in: -jitterRange...jitterRange)
             finalLongitude = lon + Double.random(in: -jitterRange...jitterRange)
         }
 
-        // 3. Create the session payload using the un-stacked properties
+     
         let session = GameSession(
             game: game,
             score: score,

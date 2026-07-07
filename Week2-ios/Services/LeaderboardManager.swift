@@ -19,7 +19,6 @@ class LeaderboardManager: ObservableObject {
         loadAllScores()
     }
     
-    
     func isHighScore(score: Int, game: String) -> Bool {
         return score > 0
     }
