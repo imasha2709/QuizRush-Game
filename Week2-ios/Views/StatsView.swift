@@ -1,9 +1,27 @@
 import SwiftUI
 import Charts
+import CoreLocation
+
+
+enum ChartFilter: Hashable {
+    case all
+    case mode(GameMode)
+    
+    var displayName: String {
+        switch self {
+        case .all: return "All"
+        case .mode(let mode): return mode.rawValue
+        }
+    }
+}
+
 
 struct StatsView: View {
 
     @ObservedObject private var sessionManager = GameSessionManager.shared
+    
+ 
+    @State private var selectedFilter: ChartFilter = .all
 
     var body: some View {
         NavigationStack {
@@ -29,7 +47,6 @@ struct StatsView: View {
             .navigationTitle("Statistics")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                   
                     ShareLink(
                         item: shareSummary,
                         subject: Text("My Game Hub Stats 🏆"),
@@ -44,7 +61,6 @@ struct StatsView: View {
             }
         }
     }
-    
     
     
     private var totalGames: Int {
@@ -76,9 +92,19 @@ struct StatsView: View {
         Built using SwiftUI 🚀
         """
     }
+    
+   
+    private var filteredSessions: [GameSession] {
+        let chronologicalSessions = sessionManager.sessions.reversed()
+        switch selectedFilter {
+        case .all:
+            return Array(chronologicalSessions)
+        case .mode(let targetMode):
+            return chronologicalSessions.filter { $0.game == targetMode }
+        }
+    }
 
   
-
     private var overviewCards: some View {
         LazyVGrid(columns: [
             GridItem(.flexible()),
@@ -116,22 +142,52 @@ struct StatsView: View {
     }
 
     private var scoreChart: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Score History")
                 .font(.headline)
-
-            Chart(sessionManager.sessions.reversed()) { session in
-                LineMark(
-                    x: .value("Date", session.date),
-                    y: .value("Score", session.score)
-                )
-
-                PointMark(
-                    x: .value("Date", session.date),
-                    y: .value("Score", session.score)
-                )
+            
+            
+            Picker("Game Selection", selection: $selectedFilter) {
+                Text(ChartFilter.all.displayName).tag(ChartFilter.all)
+                ForEach(GameMode.allCases) { mode in
+                    Text(mode.rawValue).tag(ChartFilter.mode(mode))
+                }
             }
-            .frame(height: 250)
+            .pickerStyle(.segmented)
+            .padding(.bottom, 5)
+
+            if filteredSessions.isEmpty {
+                VStack {
+                    Text("No data for this game mode yet.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(height: 250)
+                .frame(maxWidth: .infinity)
+            } else {
+                Chart(filteredSessions) { session in
+                    LineMark(
+                        x: .value("Date", session.date),
+                        y: .value("Score", session.score)
+                    )
+                    .foregroundStyle(by: .value("Game", session.game.rawValue))
+                    .interpolationMethod(.catmullRom)
+
+                    PointMark(
+                        x: .value("Date", session.date),
+                        y: .value("Score", session.score)
+                    )
+                    .foregroundStyle(by: .value("Game", session.game.rawValue))
+                }
+                .frame(height: 250)
+                
+                .chartForegroundStyleScale([
+                    GameMode.tapFrenzy.rawValue: GameMode.tapFrenzy.swiftUIColor,
+                    GameMode.lightItUp.rawValue: GameMode.lightItUp.swiftUIColor,
+                    GameMode.quizRush.rawValue: GameMode.quizRush.swiftUIColor
+                ])
+                .chartLegend(selectedFilter == .all ? .visible : .hidden)
+            }
         }
     }
 
@@ -147,6 +203,7 @@ struct StatsView: View {
 
                 HStack {
                     Image(systemName: mode.icon)
+                        .foregroundColor(mode.swiftUIColor)
                     Text(mode.rawValue)
                     Spacer()
                     Text("\(count)")
@@ -165,6 +222,7 @@ struct StatsView: View {
             ForEach(sessionManager.sessions.prefix(10)) { session in
                 HStack {
                     Image(systemName: session.game.icon)
+                        .foregroundColor(session.game.swiftUIColor)
 
                     VStack(alignment: .leading) {
                         Text(session.game.rawValue)
@@ -185,7 +243,6 @@ struct StatsView: View {
         }
     }
 }
-
 
 
 struct StatCard: View {
@@ -214,6 +271,32 @@ struct StatCard: View {
     }
 }
 
+
+extension GameMode {
+   
+    var swiftUIColor: Color {
+        switch self.color {
+        case "green": return .green
+        case "orange": return .orange
+        case "blue": return .blue
+        default: return .primary
+        }
+    }
+}
+
+
 #Preview {
-    StatsView()
+    
+    let manager = GameSessionManager.shared
+    if manager.sessions.isEmpty {
+        manager.sessions = [
+            GameSession(game: .tapFrenzy, score: 45, date: Date()),
+            GameSession(game: .lightItUp, score: 110, date: Date().addingTimeInterval(-3600)),
+            GameSession(game: .quizRush, score: 85, date: Date().addingTimeInterval(-7200)),
+            GameSession(game: .tapFrenzy, score: 30, date: Date().addingTimeInterval(-86400)),
+            GameSession(game: .lightItUp, score: 95, date: Date().addingTimeInterval(-172800))
+        ]
+    }
+    
+    return StatsView()
 }

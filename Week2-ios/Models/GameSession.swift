@@ -1,6 +1,6 @@
 import Foundation
 
-struct GameSession: Identifiable, Codable {
+struct GameSession: Identifiable, Codable, Hashable {
     var id = UUID()
     let game: GameMode
     let score: Int
