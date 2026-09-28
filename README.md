@@ -54,6 +54,11 @@ The application is developed using a **SwiftUI-based architecture**, with separa
 * Location-based features require user permission.
 * Notifications require user permission.
 
+## Project Structure
+
+The project is organized into separate folders for **Models, Services, and Views**. Some Swift files, such as the main app file and shared UI components, are kept in the main project folder for easy access.
+
+
 ## Reflection
 
 This project provided practical experience in SwiftUI and native iOS development. Developing three different mini-games helped improve my understanding of state management, user interaction, timers, animations, and score handling. I also gained experience integrating native iOS frameworks such as MapKit, CoreLocation, UserNotifications, and Swift Charts into a single application.
